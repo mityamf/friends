@@ -1,0 +1,16 @@
+.friends {
+	width: 50%;
+	box-sizing: border-box;
+	// background-color: white;
+	&.source {
+		border-right: 1px solid $background-color;
+	}
+}
+.friends__filter {
+	background-color: $background-color;
+	padding: 10px 0;
+}
+.friends__filter-input {
+	width: 100%;
+	box-sizing: border-box;
+}

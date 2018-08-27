@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="dist/css/style.css">
+	<script src="dist/handlebars.js"></script>
+	<script src="http://vk.com/js/api/openapi.js" type="text/javascript"></script>
+	<title>Document</title>
+</head>
+<body>
+	<section id="friends-filter" class="main-wrapper">
+		<header class="header">
+			<p class="header__text">Выберите друзей</p>
+		</header>
+
+		<main class="main">
+			<section class="friends source" id="my-friends">
+				<div class="friends__filter friends__filter--source">
+					<input type="text" placeholder="Начните вводить имя друга" class="friends__filter-input">
+				</div>
+				<p>Ваши друзья</p>
+				<div class="friends-list friends-list--source"></div>
+			</section>
+
+			<section class="friends selected" id="selected-friends">
+				<div class="friends__filter friends__filter--selected">
+					<input type="text" placeholder="Начните вводить имя друга" class="friends__filter-input">
+				</div>
+				<p>Друзья в списке</p>
+				<div class="friends-list friends-list--selected">
+
+				</div>
+			</section>
+		</main>
+		<footer class="footer">
+			<button class="footer__btn btn">Сохранить</button>
+		</footer>
+	</section>
+
+	<script id="template" type="text/handlebars-template">
+		{{#each items}}
+		<article class="friends-list__friend" draggable="true" data-id="{{id}}">
+			<img  class="friends-list__pic" src="{{photo_50}}" alt="" draggable="false">
+			<p class="friends-list__name">{{first_name}} {{last_name}}</p>
+			<span class="friends-list__btn"></span>
+		</article>
+		{{/each}}
+	</script>
+
+	<script src="dist/main.js"></script>
+	
+</body>
+</html>
