@@ -28,26 +28,36 @@ function callApi(method, params) {
 	})
 }
 
-let sourceObj, targetObj = {};
-let sourceArr, targetArr = [];
+let sourceArr = {};
+let selectedArr = {
+	items: []
+}
 
-let a = auth().
+auth().
 	then(() => {
 		return callApi('friends.get', {order: name, fields: 'photo_50'});
 	})
 	.then(list => {
-		const template = document.querySelector('#template').textContent;
-		const render = Handlebars.compile(template);
-		list.items.length = 10; // не забыть удалить!
-		const html = render(list);
-		const result = document.querySelector('.friends-list');
-		result.innerHTML = html;
-		//sourceObj = convert(list.items);
-		sourceArr = list.items;
-		return list;
-
+		renderFriends(list, '.friends-list--source');
+		sourceArr = list;
+		let filters = document.querySelectorAll('.friends__filter-input');
+		filters.forEach( filter => {		
+			const sourceName = filter.parentElement.classList[1].split('--')[1];
+			let data = eval(sourceName + 'Arr');
+			filter.addEventListener('keyup', filterFunction.bind(null, data, sourceName));
+		});
 	});
 
+function renderFriends(data, selector) {
+	const result = document.querySelector(selector);
+	result.innerHTML = '';
+	const template = document.querySelector('#template').textContent;
+	const render = Handlebars.compile(template);
+	//list.items.length = 10; // не забыть удалить!
+	const html = render(data);
+	
+	result.innerHTML = html;
+}
 
 const sourceZone = document.querySelector('.source');
 const targetZone = document.querySelector('.selected');
@@ -71,8 +81,8 @@ function makeDnD(zones) {
             if (currentDrag.source !== targetZone) {
                 targetZone.querySelector('.friends-list').appendChild(currentDrag.node);
                 const id = currentDrag.node.dataset.id;
-                //moveDataToObj(sourceObj, targetObj, id);
-                moveDataToArray(sourceArr, targetArr, id);
+                //selectedArr.push(id);
+                moveDataToArray(sourceArr, selectedArr, id);
             }
 
             currentDrag = null;
@@ -87,25 +97,43 @@ function elementClick(e) {
 		let currentNode = btn.parentNode;
 		if (btn.parentNode.parentNode.classList.contains('friends-list--source')) {
 			targetZone.querySelector('.friends-list').appendChild(currentNode);
-			//moveDataToObj(sourceObj, targetObj, currentNode.dataset.id);
-			moveDataToArray(sourceArr, targetArr, currentNode.dataset.id);
+			//selectedArr.push(currentNode.dataset.id);
+			moveDataToArray(sourceArr, selectedArr, currentNode.dataset.id);
 		} else if (btn.parentNode.parentNode.classList.contains('friends-list--selected')) {
 			sourceZone.querySelector('.friends-list').appendChild(currentNode);
-			moveDataToArray(targetArr, sourceArr, currentNode.dataset.id);
-
-
+			//deleteRecord(selectedArr, currentNode.dataset.id);	
+			moveDataToArray(selectedArr, sourceArr, currentNode.dataset.id);		
 		}
 	}
 }
 
-let filters = document.querySelectorAll('.friends__filter-input');
 
-filters.forEach(filter => {
-	filter.addEventListener('keyup', e => {
-	
-	})
-})
 
+
+
+function filterFunction(data, source, e) {
+	let chunk = e.target.value;
+
+	let filtered = {
+		items: []
+	};
+	data.items.forEach(item => {
+		if (isMatching(item.first_name, chunk) || isMatching(item.last_name, chunk)) {
+			filtered.items.push(item);
+		}
+	});
+	let selector = '.friends-list--' + source.toString();
+	renderFriends(filtered, selector);
+
+
+}
+
+function isMatching(full, chunk) {
+    if (full.toLowerCase().indexOf(chunk.toLowerCase()) >= 0) {
+        return true;
+    }
+}
+/*
 function convert(array) {
 	let result = {};
 	array.forEach((item, i) => {
@@ -138,19 +166,19 @@ function moveDataToObj(source, target, id) {
     }
     delete source[id];
 }
-
+*/
 function moveDataToArray(source, target, id) {
-	source.forEach((item, i) => {
+	source.items.forEach((item, i) => {
 		if (item.id == id) {
-			target.push(item);
-			source.splice(i, 1);
+			target.items.push(item);
+			source.items.splice(i, 1);
 		}
 	})
 }
 
 document.querySelector('.footer__btn').addEventListener('click', () => {
-	console.log(a);
-	//console.log(targetArr);
+	console.log(selectedArr);
+	console.log(sourceArr);
 	
 	
 
@@ -158,7 +186,7 @@ document.querySelector('.footer__btn').addEventListener('click', () => {
 
 function deleteRecord(arr, id) {
 	arr.forEach((item, i) => {
-		if (item.id == id) {
+		if (item == id) {
 			arr.splice(i, 1);
 		}
 	})
