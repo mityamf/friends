@@ -28,22 +28,24 @@ function callApi(method, params) {
 	})
 }
 
-let targetObj = {};
-let sourceObj = {};
+let sourceObj, targetObj = {};
+let sourceArr, targetArr = [];
 
-auth().
+let a = auth().
 	then(() => {
 		return callApi('friends.get', {order: name, fields: 'photo_50'});
 	})
 	.then(list => {
 		const template = document.querySelector('#template').textContent;
 		const render = Handlebars.compile(template);
-		list.items.length = 10;
-		convert(list.items);
+		list.items.length = 10; // не забыть удалить!
 		const html = render(list);
 		const result = document.querySelector('.friends-list');
 		result.innerHTML = html;
-		sourceObj = convert(list.items);
+		//sourceObj = convert(list.items);
+		sourceArr = list.items;
+		return list;
+
 	});
 
 
@@ -69,7 +71,8 @@ function makeDnD(zones) {
             if (currentDrag.source !== targetZone) {
                 targetZone.querySelector('.friends-list').appendChild(currentDrag.node);
                 const id = currentDrag.node.dataset.id;
-                moveDataToObj(sourceObj, targetObj, id);
+                //moveDataToObj(sourceObj, targetObj, id);
+                moveDataToArray(sourceArr, targetArr, id);
             }
 
             currentDrag = null;
@@ -84,10 +87,11 @@ function elementClick(e) {
 		let currentNode = btn.parentNode;
 		if (btn.parentNode.parentNode.classList.contains('friends-list--source')) {
 			targetZone.querySelector('.friends-list').appendChild(currentNode);
-			moveDataToObj(sourceObj, targetObj, currentNode.dataset.id);
+			//moveDataToObj(sourceObj, targetObj, currentNode.dataset.id);
+			moveDataToArray(sourceArr, targetArr, currentNode.dataset.id);
 		} else if (btn.parentNode.parentNode.classList.contains('friends-list--selected')) {
 			sourceZone.querySelector('.friends-list').appendChild(currentNode);
-			moveDataToObj(targetObj, sourceObj, currentNode.dataset.id);
+			moveDataToArray(targetArr, sourceArr, currentNode.dataset.id);
 
 
 		}
@@ -98,7 +102,7 @@ let filters = document.querySelectorAll('.friends__filter-input');
 
 filters.forEach(filter => {
 	filter.addEventListener('keyup', e => {
-		console.log(targetArray);
+	
 	})
 })
 
@@ -106,8 +110,7 @@ function convert(array) {
 	let result = {};
 	array.forEach((item, i) => {
 		result[item.id] = {
-			first_name: item.first_name,
-			last_name: item.last_name,
+			name: `${item.first_name} ${item.last_name}`,
 			photo_50: item.photo_50
 		};
 	})
@@ -136,10 +139,27 @@ function moveDataToObj(source, target, id) {
     delete source[id];
 }
 
+function moveDataToArray(source, target, id) {
+	source.forEach((item, i) => {
+		if (item.id == id) {
+			target.push(item);
+			source.splice(i, 1);
+		}
+	})
+}
+
 document.querySelector('.footer__btn').addEventListener('click', () => {
-	console.log(sourceObj);
-	console.log(targetObj);
-	console.log(convertToArray(targetObj));
+	console.log(a);
+	//console.log(targetArr);
+	
 	
 
 })
+
+function deleteRecord(arr, id) {
+	arr.forEach((item, i) => {
+		if (item.id == id) {
+			arr.splice(i, 1);
+		}
+	})
+}
