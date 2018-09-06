@@ -1,5 +1,5 @@
 VK.init({
-	apiId: 6673457
+	apiId: 6681223
 });
 
 function auth() {
@@ -38,8 +38,17 @@ auth().
 		return callApi('friends.get', {order: name, fields: 'photo_50'});
 	})
 	.then(list => {
-		renderFriends(list, '.friends-list--source');
-		sourceArr = list;
+		let savedFriends = localStorage.getItem('selectedFriends');
+		if (savedFriends) {
+			selectedArr = JSON.parse(savedFriends);
+			renderFriends(selectedArr, '.friends-list--selected');
+			sourceArr = deduction(list, selectedArr);
+			renderFriends(sourceArr, '.friends-list--source');
+		} else {
+			renderFriends(list, '.friends-list--source');	
+			sourceArr = list;
+		}
+		
 		let filters = document.querySelectorAll('.friends__filter-input');
 		filters.forEach( filter => {		
 			const sourceName = filter.parentElement.classList[1].split('--')[1];
@@ -67,6 +76,7 @@ makeDnD([sourceZone, targetZone]);
 function makeDnD(zones) {
     let currentDrag;
 	sourceZone.addEventListener('dragstart', (e) => {
+		e.dataTransfer.setData("text/plain", 'node');
         currentDrag = { source: sourceZone, node: e.target };
     });
 
@@ -107,7 +117,13 @@ function elementClick(e) {
 	}
 }
 
+function deduction(source, subtrahend) {
+	for (let i = 0; i < subtrahend.items.length; i++) {
+		deleteRecord(source.items, subtrahend.items[i].id);
+	}
 
+	return source;
+}
 
 
 
@@ -177,16 +193,13 @@ function moveDataToArray(source, target, id) {
 }
 
 document.querySelector('.footer__btn').addEventListener('click', () => {
-	console.log(selectedArr);
-	console.log(sourceArr);
-	
-	
-
-})
+	const data = JSON.stringify(selectedArr);
+	localStorage.setItem('selectedFriends', data);
+});
 
 function deleteRecord(arr, id) {
 	arr.forEach((item, i) => {
-		if (item == id) {
+		if (item.id == id) {
 			arr.splice(i, 1);
 		}
 	})
